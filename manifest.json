@@ -1,0 +1,27 @@
+{
+  "name": "Immortal Snail",
+  "version": "0.1.0",
+  "description": "You die if the snail touches you",
+  "permissions": ["storage", "tabs"],
+  "background": {
+    "service_worker": "serviceWorker.js",
+    "matches": ["<all_urls>"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["scripts/contentScript.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/square.jpeg"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "action": {
+    "default_title": "My YT Bookmarks",
+    "default_popup": "popup/popup.html"
+  },
+  "manifest_version": 3
+}
