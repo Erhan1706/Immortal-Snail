@@ -1,28 +1,55 @@
 let mouseX;
 let mouseY;
 
-function handleMouseMove(event) {
+let snailX;
+let snailY;
+
+const speed = 10;
+
+const snail = document.createElement("img");
+snail.src = chrome.runtime.getURL("assets/square.jpeg");
+snail.id = "chasing-element";
+document.body.appendChild(snail);
+
+snail.style.width = "100px";
+snail.style.height = "100px";
+snail.style.position = "absolute";
+
+snail.style.left = "0px";
+snail.style.top = "0px";
+
+snailX = 0;
+snailY = 0;
+
+function getCoordinates(event) {
   // Get the mouse coordinates from the event object
   mouseX = event.clientX;
   mouseY = event.clientY;
 }
-// Step 1: Create an <img> element
-const imgElement = document.createElement("img");
 
-// Step 2: Set the image source
-imgElement.src = chrome.runtime.getURL("assets/square.jpeg");
-imgElement.id = "chasing-element";
-// Step 3: Append the image to the body
-document.body.appendChild(imgElement);
-imgElement.style.width = "100px";
-imgElement.style.height = "100px";
-imgElement.style.position = "absolute";
+function chase(event) {
+  const xPos = mouseX - snail.offsetWidth / 2;
+  const yPos = mouseY - snail.offsetHeight / 2;
 
-document.addEventListener("mousemove", handleMouseMove);
-document.addEventListener("mousemove", function (event) {
-  var element = document.getElementById("chasing-element");
-  var xPos = mouseX - element.offsetWidth / 2;
-  var yPos = mouseY - element.offsetHeight / 2;
-  element.style.left = xPos + "px";
-  element.style.top = yPos + "px";
-});
+  const currentX = parseInt(snail.style.left);
+  const currentY = parseInt(snail.style.top);
+
+  const dx = xPos - currentX;
+  const dy = yPos - currentY;
+
+  const distance = Math.sqrt(dx * dx + dy * dy);
+
+  if (distance <= speed) {
+    snail.style.left = xPos + "px";
+    snail.style.top = yPos + "px";
+  } else {
+    const vx = (dx / distance) * speed;
+    const vy = (dy / distance) * speed;
+
+    snail.style.left = currentX + vx + "px";
+    snail.style.top = currentY + vy + "px";
+  }
+}
+setInterval(chase, 10);
+document.addEventListener("mousemove", getCoordinates);
+//document.addEventListener("mousemove", chase);
