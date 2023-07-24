@@ -1,25 +1,36 @@
 let mouseX;
 let mouseY;
+const speed = 2;
 
-let snailX;
-let snailY;
+const snailContainer = document.createElement("div");
+snailContainer.classList.add("snail-container");
+document.body.appendChild(snailContainer);
+const snailSVG = chrome.runtime.getURL("assets/snail.svg");
+let snail;
 
-const speed = 10;
-
-const snail = document.createElement("img");
-snail.src = chrome.runtime.getURL("assets/square.jpeg");
-snail.id = "chasing-element";
-document.body.appendChild(snail);
-
-snail.style.width = "100px";
-snail.style.height = "100px";
-snail.style.position = "absolute";
-
-snail.style.left = "0px";
-snail.style.top = "0px";
-
-snailX = 0;
-snailY = 0;
+// Inject the SVG directly into the DOM
+fetch(snailSVG)
+  .then((response) => {
+    if (!response.ok) {
+      throw new Error("Error injecting SVG: " + response.statusText);
+    }
+    return response.text();
+  })
+  .then((htmlContent) => {
+    const svgText = new DOMParser().parseFromString(htmlContent, "text/xml");
+    const importedNode = document.importNode(svgText.documentElement, true); // Import the SVG into the current document
+    document.body.appendChild(importedNode);
+    snail = document.getElementById("snail");
+    snail.style.width = "100px";
+    snail.style.height = "100px";
+    snail.style.left = "0px";
+    snail.style.top = "0px";
+    snail.style.position = "absolute";
+    setInterval(chase, 10);
+  })
+  .catch((error) => {
+    console.error("Error fetching content:", error);
+  });
 
 function getCoordinates(event) {
   // Get the mouse coordinates from the event object
@@ -27,29 +38,20 @@ function getCoordinates(event) {
   mouseY = event.clientY;
 }
 
-function chase(event) {
-  const xPos = mouseX - snail.offsetWidth / 2;
-  const yPos = mouseY - snail.offsetHeight / 2;
+function chase() {
+  if (!snail) return;
+  const snailRect = snail.getBoundingClientRect();
+  // Calculate the distance between the snail and the mouse cursor
+  const dx = mouseX - (snailRect.left + snailRect.width / 2);
+  const dy = mouseY - (snailRect.top + snailRect.height / 2);
 
-  const currentX = parseInt(snail.style.left);
-  const currentY = parseInt(snail.style.top);
-
-  const dx = xPos - currentX;
-  const dy = yPos - currentY;
-
+  // Calculate the distance to move in each step (adjusting speed)
   const distance = Math.sqrt(dx * dx + dy * dy);
+  const stepX = (speed / distance) * dx;
+  const stepY = (speed / distance) * dy;
 
-  if (distance <= speed) {
-    snail.style.left = xPos + "px";
-    snail.style.top = yPos + "px";
-  } else {
-    const vx = (dx / distance) * speed;
-    const vy = (dy / distance) * speed;
-
-    snail.style.left = currentX + vx + "px";
-    snail.style.top = currentY + vy + "px";
-  }
+  // Update the snail's position
+  snail.style.left = snailRect.left + stepX + "px";
+  snail.style.top = snailRect.top + stepY + "px";
 }
-setInterval(chase, 10);
 document.addEventListener("mousemove", getCoordinates);
-//document.addEventListener("mousemove", chase);
