@@ -1,6 +1,6 @@
 let mouseX;
 let mouseY;
-const speed = 2;
+let speed = 0.5;
 
 const snailContainer = document.createElement("div");
 snailContainer.classList.add("snail-container");
@@ -55,3 +55,12 @@ function chase() {
   snail.style.top = snailRect.top + stepY + "px";
 }
 document.addEventListener("mousemove", getCoordinates);
+
+// Function to handle the config values received from popup
+function handleConfigOptions(message) {
+  speed = message.speedValue;
+  snail.style.width = message.sizeValue + "px";
+  snail.style.height = message.sizeValue + "px";
+}
+
+chrome.runtime.onMessage.addListener(handleConfigOptions);
