@@ -1,6 +1,7 @@
 let mouseX;
 let mouseY;
 let speed = 0.5;
+let turned = false;
 
 const snailContainer = document.createElement("div");
 snailContainer.classList.add("snail-container");
@@ -51,9 +52,18 @@ function chase() {
   const stepY = (speed / distance) * dy;
 
   // Update the snail's position
-  snail.style.left = snailRect.left + stepX + "px";
-  snail.style.top = snailRect.top + stepY + "px";
+  if (!turned && mouseX < snailRect.left) {
+    snail.classList.add("turnSnail");
+    turned = true;
+  } else if (turned && mouseX > snailRect.left) {
+    snail.classList.remove("turnSnail");
+    turned = false;
+  } else {
+    snail.style.left = snailRect.left + stepX + "px";
+    snail.style.top = snailRect.top + stepY + "px";
+  }
 }
+
 document.addEventListener("mousemove", getCoordinates);
 
 // Function to handle the config values received from popup
