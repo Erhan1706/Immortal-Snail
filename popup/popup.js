@@ -2,11 +2,11 @@ import { getActiveTabURL } from "../scripts/utils.js";
 
 const speedSlider = document.getElementById("speedSlider");
 const speedDisplay = document.getElementById("speedDisplay");
-speedDisplay.textContent = speedSlider.value;
+speedDisplay.value = speedSlider.value;
 
 const sizeSlider = document.getElementById("sizeSlider");
 const sizeDisplay = document.getElementById("sizeDisplay");
-sizeDisplay.textContent = sizeSlider.value;
+sizeDisplay.value = sizeSlider.value;
 
 function saveSliderValues(speedValue, sizeValue) {
   chrome.storage.local.set({
@@ -28,22 +28,37 @@ function getSliderValues(callback) {
 }
 
 speedSlider.addEventListener("input", function () {
-  speedDisplay.textContent = speedSlider.value;
+  speedDisplay.value = speedSlider.value;
   sendMessageToContentScript({
     speed: speedSlider.value,
     size: sizeSlider.value,
   });
-  speedSlider.value = speedSlider.value;
   saveSliderValues(speedSlider.value, sizeSlider.value);
 });
 
+speedDisplay.addEventListener("input", function () {
+  speedSlider.value = speedDisplay.value;
+  sendMessageToContentScript({
+    speed: speedSlider.value,
+    size: sizeSlider.value,
+  });
+});
+
 sizeSlider.addEventListener("input", function () {
-  sizeDisplay.textContent = sizeSlider.value;
+  sizeDisplay.value = sizeSlider.value;
   sendMessageToContentScript({
     speed: speedSlider.value,
     size: sizeSlider.value,
   });
   saveSliderValues(speedSlider.value, sizeSlider.value);
+});
+
+sizeDisplay.addEventListener("input", function () {
+  sizeSlider.value = sizeDisplay.value;
+  sendMessageToContentScript({
+    speed: speedSlider.value,
+    size: sizeSlider.value,
+  });
 });
 
 async function sendMessageToContentScript(value) {
@@ -58,8 +73,8 @@ async function sendMessageToContentScript(value) {
 document.addEventListener("DOMContentLoaded", function () {
   getSliderValues(function (speedValue, sizeValue) {
     speedSlider.value = speedValue;
-    speedDisplay.textContent = speedValue;
+    speedDisplay.value = speedValue;
     sizeSlider.value = sizeValue;
-    sizeDisplay.textContent = sizeValue;
+    sizeDisplay.value = sizeValue;
   });
 });

@@ -2,12 +2,14 @@ let mouseX;
 let mouseY;
 let speed = 0.5;
 let turned = false;
+let dead = false;
 
 const snailContainer = document.createElement("div");
 snailContainer.classList.add("snail-container");
 document.body.appendChild(snailContainer);
 const snailSVG = chrome.runtime.getURL("assets/snail.svg");
 let snail;
+let chaseIntervalID;
 
 // Inject the SVG directly into the DOM
 fetch(snailSVG)
@@ -27,7 +29,7 @@ fetch(snailSVG)
     snail.style.left = "0px";
     snail.style.top = "0px";
     snail.style.position = "absolute";
-    setInterval(chase, 10);
+    chaseIntervalID = setInterval(chase, 10);
   })
   .catch((error) => {
     console.error("Error fetching content:", error);
@@ -52,7 +54,15 @@ function chase() {
   const stepY = (speed / distance) * dy;
 
   // Update the snail's position
-  if (!turned && mouseX < snailRect.left) {
+  if (
+    Math.abs(mouseX - snailRect.left) < 50 &&
+    Math.abs(mouseY - snailRect.top) < 50 &&
+    !dead
+  ) {
+    dead = true;
+    addDeathScreen();
+    clearInterval(chaseIntervalID);
+  } else if (!turned && mouseX < snailRect.left) {
     snail.classList.add("turnSnail");
     turned = true;
   } else if (turned && mouseX > snailRect.left) {
@@ -62,9 +72,20 @@ function chase() {
     snail.style.left = snailRect.left + stepX + "px";
     snail.style.top = snailRect.top + stepY + "px";
   }
+  //console.log("MouseX: " + mouseX + " MouseY: " + mouseY);
+  //console.log("SnailX: " + snailRect.left + " SnailY: " + snailRect.top);
 }
-
 document.addEventListener("mousemove", getCoordinates);
+
+function addDeathScreen() {
+  const deathScreen = document.createElement("div");
+  deathScreen.classList.add("death-screen");
+  const deathText = document.createElement("div");
+  deathText.classList.add("death-text");
+  deathText.innerHTML = "YOU DIED";
+  deathScreen.appendChild(deathText);
+  document.body.appendChild(deathScreen);
+}
 
 // Function to handle the config values received from popup
 function handleConfigOptions(message) {
