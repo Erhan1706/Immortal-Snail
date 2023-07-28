@@ -64,6 +64,7 @@ sizeDisplay.addEventListener("input", function () {
 async function sendMessageToContentScript(value) {
   const activeTab = await getActiveTabURL();
   chrome.tabs.sendMessage(activeTab, {
+    type: "CONFIG",
     speedValue: value.speed,
     sizeValue: value.size,
   });

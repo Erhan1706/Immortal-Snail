@@ -17,6 +17,7 @@ fetch(snailSVG)
     if (!response.ok) {
       throw new Error("Error injecting SVG: " + response.statusText);
     }
+    console.log("SVG injected");
     return response.text();
   })
   .then((htmlContent) => {
@@ -24,16 +25,32 @@ fetch(snailSVG)
     const importedNode = document.importNode(svgText.documentElement, true); // Import the SVG into the current document
     document.body.appendChild(importedNode);
     snail = document.getElementById("snail");
-    snail.style.width = "100px";
-    snail.style.height = "100px";
-    snail.style.left = "0px";
-    snail.style.top = "0px";
-    snail.style.position = "absolute";
+    setupSnail();
     chaseIntervalID = setInterval(chase, 10);
   })
   .catch((error) => {
     console.error("Error fetching content:", error);
   });
+
+function setupSnail() {
+  const position = getSnailPosition();
+  if (position) {
+    snail.style.left = position.left;
+    snail.style.top = position.top;
+  } else {
+    snail.style.left = "0px";
+    snail.style.top = "0px";
+  }
+  const configs = getSnailConfigs();
+  if (configs) {
+    snail.style.width = configs.size;
+    snail.style.height = configs.size;
+    speed = configs.speed ? configs.speed : 0.5;
+  } else {
+    snail.style.width = "100px";
+    snail.style.height = "100px";
+  }
+}
 
 function getCoordinates(event) {
   // Get the mouse coordinates from the event object
@@ -54,11 +71,7 @@ function chase() {
   const stepY = (speed / distance) * dy;
 
   // Update the snail's position
-  if (
-    Math.abs(mouseX - snailRect.left) < 50 &&
-    Math.abs(mouseY - snailRect.top) < 50 &&
-    !dead
-  ) {
+  if (distance < 20 && !dead) {
     dead = true;
     addDeathScreen();
     clearInterval(chaseIntervalID);
@@ -71,9 +84,8 @@ function chase() {
   } else {
     snail.style.left = snailRect.left + stepX + "px";
     snail.style.top = snailRect.top + stepY + "px";
+    saveSnailPosition(snail.style.left, snail.style.top);
   }
-  //console.log("MouseX: " + mouseX + " MouseY: " + mouseY);
-  //console.log("SnailX: " + snailRect.left + " SnailY: " + snailRect.top);
 }
 document.addEventListener("mousemove", getCoordinates);
 
@@ -87,11 +99,56 @@ function addDeathScreen() {
   document.body.appendChild(deathScreen);
 }
 
-// Function to handle the config values received from popup
-function handleConfigOptions(message) {
-  speed = message.speedValue;
-  snail.style.width = message.sizeValue + "px";
-  snail.style.height = message.sizeValue + "px";
+function saveSnailPosition(left, top) {
+  localStorage.setItem("snailPosition", JSON.stringify({ left, top }));
 }
 
-chrome.runtime.onMessage.addListener(handleConfigOptions);
+function saveSnailConfigs(speed, size) {
+  localStorage.setItem("snailConfigs", JSON.stringify({ speed, size }));
+}
+
+function getSnailConfigs() {
+  const storedConfigs = localStorage.getItem("snailConfigs");
+  console.log(storedConfigs);
+  return storedConfigs ? JSON.parse(storedConfigs) : null;
+}
+
+// Function to get the snail's position from localStorage
+function getSnailPosition() {
+  const storedPosition = localStorage.getItem("snailPosition");
+  console.log(storedPosition);
+  return storedPosition ? JSON.parse(storedPosition) : null;
+}
+
+// Save the snail's position before unloading the page
+window.addEventListener("beforeunload", () => {
+  saveSnailPosition(snail.style.left, snail.style.top);
+});
+
+function handleMessage(message, sender, sendResponse) {
+  const { type, speedValue, sizeValue } = message;
+  switch (type) {
+    case "CONFIG":
+      console.log("Received config options from popup");
+      handleConfigOptions(speedValue, sizeValue);
+      break;
+    case "NEWTAB":
+      //saveSnailPosition(snail.style.left, snail.style.top);
+      console.log("New tab opened");
+      break;
+    case "TEST":
+      console.log("Tab updated");
+      setupSnail();
+      break;
+  }
+}
+
+// Function to handle the config values received from popup
+function handleConfigOptions(speedValue, sizeValue) {
+  speed = speedValue;
+  snail.style.width = sizeValue + "px";
+  snail.style.height = sizeValue + "px";
+  saveSnailConfigs(speedValue, sizeValue + "px");
+}
+
+chrome.runtime.onMessage.addListener(handleMessage);

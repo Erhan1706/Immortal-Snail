@@ -4,8 +4,7 @@
   "description": "You die if the snail touches you",
   "permissions": ["storage", "tabs"],
   "background": {
-    "service_worker": "serviceWorker.js",
-    "matches": ["<all_urls>"]
+    "service_worker": "serviceWorker.js"
   },
   "content_scripts": [
     {

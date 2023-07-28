@@ -1,9 +1,16 @@
 body {
   width: 250px;
+  margin: 15px;
 }
 
 .popup-title {
   text-align: center;
+}
+
+.config-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .slider {
@@ -42,4 +49,10 @@ body {
 
 .config-text {
   font-size: 15px;
+  margin-bottom: 10px;
+}
+
+.display {
+  width: 47px;
+  margin-left: 7px;
 }
