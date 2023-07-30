@@ -3,6 +3,7 @@ let mouseY;
 let speed = 0.5;
 let turned = false;
 let dead = false;
+let deathScreenCheck = true;
 
 const snailContainer = document.createElement("div");
 snailContainer.classList.add("snail-container");
@@ -17,7 +18,6 @@ fetch(snailSVG)
     if (!response.ok) {
       throw new Error("Error injecting SVG: " + response.statusText);
     }
-    console.log("SVG injected");
     return response.text();
   })
   .then((htmlContent) => {
@@ -26,7 +26,7 @@ fetch(snailSVG)
     document.body.appendChild(importedNode);
     snail = document.getElementById("snail");
     setupSnail();
-    chaseIntervalID = setInterval(chase, 10);
+    chaseIntervalID = setInterval(chase, 20);
   })
   .catch((error) => {
     console.error("Error fetching content:", error);
@@ -46,10 +46,20 @@ function setupSnail() {
     snail.style.width = configs.size;
     snail.style.height = configs.size;
     speed = configs.speed ? configs.speed : 0.5;
+    deathScreenCheck = configs.enableDeathScreen;
   } else {
     snail.style.width = "100px";
     snail.style.height = "100px";
   }
+}
+
+function resetSnail() {
+  snail.style.left = "0px";
+  snail.style.top = "0px";
+  turned = false;
+  dead = false;
+  clearInterval(chaseIntervalID);
+  chaseIntervalID = setInterval(chase, 20);
 }
 
 function getCoordinates(event) {
@@ -73,10 +83,11 @@ function chase() {
   // Update the snail's position
   if (distance < 20 && !dead) {
     dead = true;
-    addDeathScreen();
+    if (deathScreenCheck) addDeathScreen();
     clearInterval(chaseIntervalID);
   } else if (!turned && mouseX < snailRect.left) {
     snail.classList.add("turnSnail");
+    snail.style.left = snailRect.left + stepX - 20 + "px";
     turned = true;
   } else if (turned && mouseX > snailRect.left) {
     snail.classList.remove("turnSnail");
@@ -103,8 +114,11 @@ function saveSnailPosition(left, top) {
   localStorage.setItem("snailPosition", JSON.stringify({ left, top }));
 }
 
-function saveSnailConfigs(speed, size) {
-  localStorage.setItem("snailConfigs", JSON.stringify({ speed, size }));
+function saveSnailConfigs(speed, size, enableDeathScreen) {
+  localStorage.setItem(
+    "snailConfigs",
+    JSON.stringify({ speed, size, enableDeathScreen })
+  );
 }
 
 function getSnailConfigs() {
@@ -126,29 +140,28 @@ window.addEventListener("beforeunload", () => {
 });
 
 function handleMessage(message, sender, sendResponse) {
-  const { type, speedValue, sizeValue } = message;
+  const { type, speedValue, sizeValue, deathScreenCheck } = message;
   switch (type) {
     case "CONFIG":
-      console.log("Received config options from popup");
-      handleConfigOptions(speedValue, sizeValue);
+      console.log(speedValue, sizeValue, deathScreenCheck);
+      handleConfigOptions(speedValue, sizeValue, deathScreenCheck);
       break;
-    case "NEWTAB":
-      //saveSnailPosition(snail.style.left, snail.style.top);
-      console.log("New tab opened");
-      break;
-    case "TEST":
-      console.log("Tab updated");
+    case "TAB_UPDATED":
       setupSnail();
+      break;
+    case "RESET":
+      resetSnail();
       break;
   }
 }
 
 // Function to handle the config values received from popup
-function handleConfigOptions(speedValue, sizeValue) {
+function handleConfigOptions(speedValue, sizeValue, enableDeathScreen) {
   speed = speedValue;
   snail.style.width = sizeValue + "px";
   snail.style.height = sizeValue + "px";
-  saveSnailConfigs(speedValue, sizeValue + "px");
+  deathScreenCheck = enableDeathScreen;
+  saveSnailConfigs(speedValue, sizeValue + "px", enableDeathScreen);
 }
 
 chrome.runtime.onMessage.addListener(handleMessage);

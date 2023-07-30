@@ -13,6 +13,6 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   // Send a message to the content script of the updated tab
   chrome.tabs.sendMessage(tabId, {
-    type: "TEST",
+    type: "TAB_UPDATED",
   });
 });

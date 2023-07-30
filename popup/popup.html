@@ -4,7 +4,7 @@
 <html>
   <body>
     <h1 class="popup-title">Snail Configuration</h1>
-    <div class="slidecontainer" id="speedSliderContainer">
+    <div class="slideContainer" id="speedSliderContainer">
       <p class="config-text">Speed:</p>
       <div class="config-container">
         <input
@@ -27,7 +27,7 @@
         />
       </div>
     </div>
-    <div class="slidecontainer" id="sizeSliderContainer">
+    <div class="slideContainer" id="sizeSliderContainer">
       <p class="config-text">Size:</p>
       <div class="config-container">
         <input
@@ -49,6 +49,15 @@
           id="sizeDisplay"
         />
       </div>
+    </div>
+    <div class="checkboxContainer" id="sizeSliderContainer">
+      <input type="checkbox" class="checkbox" id="deathScreenCheck" checked />
+      <label for="deathScreenConfig" id="deathScreenCheckText">
+        Death screen enabled
+      </label>
+    </div>
+    <div class="resetContainer">
+      <button class="button" id="resetButton">Reset Snail</button>
     </div>
   </body>
 </html>

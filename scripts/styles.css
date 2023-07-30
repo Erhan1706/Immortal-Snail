@@ -1,23 +1,23 @@
 @keyframes snailAnimation {
   50% {
-    transform: skew(-2deg, -3deg);
+    transform: skew(-10deg, -2deg);
   }
 }
 
 @keyframes shellAnimation {
   50% {
-    transform: translate(-5px, 5px);
+    transform: translate(-15px, 3px);
   }
 }
 
 .snailHead,
 .snailBody {
-  animation: snailAnimation 3s infinite;
+  animation: snailAnimation 2s infinite;
   transform-origin: center;
 }
 
 .snailShell {
-  animation: shellAnimation 3s infinite;
+  animation: shellAnimation 2s infinite;
   transform-origin: center;
 }
 
