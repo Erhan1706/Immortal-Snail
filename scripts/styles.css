@@ -22,16 +22,8 @@
 }
 
 #snail {
-  position: absolute;
+  position: fixed;
   z-index: 10000;
-}
-
-.snail-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: min-content;
-  height: min-content;
 }
 
 @keyframes turn {
